@@ -19,3 +19,4 @@ $RECYCLE.BIN/
 
 #PyCharm Ignore
 /.idea
+*.pyc
