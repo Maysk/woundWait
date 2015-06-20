@@ -19,7 +19,12 @@ t3.setListaDeOperacoes([op4])
 
 e1 = Escalonador([t1,t2,t3]) #exemplo inutil, claro
 
+print t1, "\n", t2, "\n", t3
 
+listaDeTransacoes = [t2,t1,t3]
+print listaDeTransacoes
+listaDeTransacoes.sort()
+print listaDeTransacoes
 
 print "t1: ", t1.timeStampDaTransacao
 print "t2: ", t2.timeStampDaTransacao
