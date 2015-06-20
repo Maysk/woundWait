@@ -1,5 +1,5 @@
-import Operacao
-import Transacao
+from Operacao import Operacao
+from Transacao import Transacao
 import os.path
 
 class GerenciadorDeArquivos:
@@ -9,26 +9,62 @@ class GerenciadorDeArquivos:
     
     def lerEntrada(self, nomeArquivoEntrada = 'historiaEntrada.luke'):
         listaTransacoes = [] #retorno do metodo
-        if(os.path.isfile(nomeArquivoEntrada)):#se o arquivo existe
-            
-            
+        historiaCustomizada = [] #retorno do metodo
+        if(os.path.isfile(nomeArquivoEntrada)):#se o arquivo existe            
             arquivoEntrada = open(nomeArquivoEntrada,'r')
         
-            print '\n',arquivoEntrada.read()
-        
-        
-        
+            linhas = arquivoEntrada.readlines()
+            l = 0
+                           
+            #Leitura:
+            while(linhas[l] != '\n'):
+                #ler transacao da linha atual:
+                transacaoAtual = Transacao(linhas[l].split(':')[0])
+                
+                operacoesDaTransacaoAtual = linhas[l].split(':')[1].split(';')
+                
+                for element in operacoesDaTransacaoAtual:
+                    
+                    operacao = Operacao(element.split('(')[0], element.split('(')[1].split(')')[0])
+                    transacaoAtual.adicionarOperacao(operacao)
+                
+                listaTransacoes.append(transacaoAtual)
+                l = l + 1
+
+            l = l + 1 #pular a linha '\n'
+                        
+            #Ler a flag de HistoriaAutomatica
+            if (linhas[l].split('=')[1] == 'True\n'):
+                #Se a historia for gerada automaticamente, ignora o resto do arquivo
+                pass                
+            else:                
+                #Senao, ler o resto do arquivo 
+                historiaEntrada = linhas[l+2].split(';') #o +2 no indice e de pular a linha HistoriaAutomatica=<Bool> e de pular a linha '\n'
+                
+                for operacao in historiaEntrada:
+                    tipoDaOperacao = operacao[0]
+                    objetoDaOperacao = operacao.split('(')[1].split(')')[0]
+                    nomeDaTransacao = 'T'+operacao.split(tipoDaOperacao)[1].split('(')[0]
+                
+                    operacaoAInserir = Operacao(tipoDaOperacao, objetoDaOperacao)
+                    for t in listaTransacoes:
+                        if(t.nomeDaTransacao == nomeDaTransacao):
+                            operacaoAInserir.transacaoResponsavel = t
+                    
+                    historiaCustomizada.append(operacaoAInserir)                    
+                
             arquivoEntrada.close()
             
         else:
-            print "Arquivo nao existe!"
+            print "Arquivo de entrada nao existe!"
         
-        return listaTransacoes
+        return [listaTransacoes,historiaCustomizada]
     
     
     def escreverSaida(self, historiaSaida, nomeArquivoSaida = 'historiaSaida.luke' ):
-        arquivoSaida = open(nomeArquivoSaida,'w')
-        
-        arquivoSaida.write('huehuehuehue')
+        arquivoSaida = open(nomeArquivoSaida,'w')        
+        arquivoSaida.write('Historia de Saida:\n\n')
+        for operacao in historiaSaida:
+            arquivoSaida.write(operacao.tipoDeOperacao + operacao.transacaoResponsavel.nomeDaTransacao.replace('T','')+'('+operacao.objetoDaOperacao+')\n')        
         
         arquivoSaida.close()

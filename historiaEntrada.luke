@@ -1,0 +1,7 @@
+T1:w(X);r(Y);c()
+T2:w(Y);r(Z);w(W);c()
+T3:r(X);r(Y);r(W);W(Z);c()
+
+HistoriaAutomatica=True
+
+w1(X);r1(Y);c1();r3(X);r3(Y);r3(W);w3(Z);c3();w2(Y);r2(Z);w2(W);c2()

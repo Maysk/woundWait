@@ -1,0 +1,14 @@
+Historia de Saida:
+
+w1(X)
+w2(Y)
+r3(X)
+r1(Y)
+r2(Z)
+r3(Y)
+c1()
+w2(W)
+r3(W)
+c2()
+W3(Z)
+c3()
