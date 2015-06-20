@@ -21,6 +21,8 @@ class Escalonador(object):
                     if(t.indiceProximaOperacao < len(t.listaDeOperacoes)):
                         self.historiaEntrada.append(t.listaDeOperacoes[t.indiceProximaOperacao])
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+            for t in self.listaDeTransacoes:
+                t.indiceProximaOperacao = 0
         else: 		
             self.historiaEntrada = historiaEntrada #Lista de Operacoes
         
