@@ -16,7 +16,7 @@ class Transacao(object):
         self.nomeDaTransacao = nomeDaTransacao
         self.listaDeOperacoes = []
         self.indiceProximaOperacao = 0
-
+        self.isWaiting = False
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()
         else: #se for Linux ou outro
@@ -27,7 +27,13 @@ class Transacao(object):
         return cmp(self.timeStampDaTransacao, other.timeStampDaTransacao)
 
     def adicionarOperacao(self, operacao):
+        operacao.transacaoResponsavel = self
         self.listaDeOperacoes.append(operacao)
 
     def setListaDeOperacoes(self, listaDeOperacoes):
         self.listaDeOperacoes = listaDeOperacoes
+
+
+    def abort(self):
+        return None
+

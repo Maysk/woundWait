@@ -7,7 +7,6 @@ class Operacao(object):
             -tipoDeOperacao: string write/read/commit/...
             -objetoDaOperacao = '': string mostrando o objeto que sofre a transacao, como 'X', 'Y',...
         '''
-
         self.tipoDeOperacao = tipoDeOperacao    
         self.objetoDaOperacao = objetoDaOperacao
         self.transacaoResponsavel = None
@@ -16,8 +15,7 @@ class Operacao(object):
     def setTransacaoResponsavel(self, transacaoResponsavel):
         self.transacaoResponsavel = transacaoResponsavel
 
-    def __cmp__(self, other):
-        return cmp(self.transacaoResponsavel, other.transacaoResponsavel)
+
 
 
 

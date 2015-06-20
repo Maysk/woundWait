@@ -3,17 +3,18 @@ class Objeto:
     def __init__(self):
         self.listaDeEspera = []
         self.listaDeBloqueioCompartilhado = []
-        self.isSBlock = False
-        self.isXBlock = False
-        self.opXBlock = None
+        self.transacaoXLock = None
 
-    def avaliarOperacao(self, operacao):
+    def isSharedLocked(self):
+        if( len(self.listaDeBloqueioCompartilhado) != 0):
+            return True
+        else:
+            return False
 
-        if(operacao.tipoDeOperacao == 'r'):
-            self.listaDeBloqueioCompartilhado.append(operacao)
-            self.listaDeBloqueioCompartilhado.sort()
-            self.isSBlock = True
-        elif(operacao.tipoDeOperacao == 'w'):
-            self.opXBlock = operacao
-            self.isXBlock = True
+    def isExclusiveLocked(self):
+        if( len(self.transacaoXLock) != None):
+            return True
+        else:
+            return False
+
 
