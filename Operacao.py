@@ -1,9 +1,17 @@
 class Operacao(object):
-    def __init__(self, tipoDeOperacao, transacaoResposavel, objetoDaTransacao):
-        self.tipoDeOperacao = tipoDeOperacao
-        self.transacaoReponsavel = transacaoResposavel
-        self.objetoDaTransacao = objetoDaTransacao
-    def causaConflito(self,outraOperacao):
-        if((self.tipoDeOperacao == 'write' or outraOperacao.tipoDeOperacao == 'write') and self.transacaoReponsavel != outraOperacao.transacaoReponsavel and self.objetoDaTransacao == outraOperacao.objetoDaTransacao):
-            return True
-        return False
+
+    def __init__(self, tipoDeOperacao, objetoDaOperacao = ''):
+        '''Construtor da classe Operacao
+            Entradas:
+            -tipoDeOperacao: string write/read/commit/...
+            -objetoDaOperacao = '': string mostrando o objeto que sofre a transacao, como 'X', 'Y',...
+        '''
+        self.tipoDeOperacao = tipoDeOperacao    
+        self.objetoDaOperacao = objetoDaOperacao
+
+    #def causaConflito(self,outraOperacao):
+    #   if((self.tipoDeOperacao == 'write' or outraOperacao.tipoDeOperacao == 'write') and self.transacaoReponsavel.nomeDaTransacao != outraOperacao.transacaoReponsavel.nomeDaTransacao and self.objetoDaTransacao == outraOperacao.objetoDaTransacao):
+    #      return True
+    # return False
+    #mudar causaConflito para o Gerenciador de Bloqueio
+    
