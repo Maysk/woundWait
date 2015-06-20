@@ -4,8 +4,8 @@ from Escalonador import Escalonador
 
 
 t1 = Transacao("Transacao 1")
-t2 = Transacao("Trasacao 2")
-t3 = Transacao("Trasacao 3")
+t2 = Transacao("Transacao 2")
+t3 = Transacao("Transacao 3")
 
 op1 = Operacao('write','X')
 op2 = Operacao('read','X')
