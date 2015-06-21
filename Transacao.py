@@ -17,7 +17,7 @@ class Transacao(object):
         self.listaDeOperacoes = []
         self.indiceProximaOperacao = 0
         self.isWaiting = False
-        self.isWaiting = False
+        self.isOver = False
 
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()

@@ -10,22 +10,22 @@ class Escalonador(object):
         self.listaDeTransacoes = listaDeTransacoes
         self.grafoDeEspera = '' # String marcando o Wait For Graph
         self.lockMan = GerenciadorDeBloqueio()
-        self.nOperacoes = 0 ##
-                            ##
-                            ##
+        self.nOperacoesRealizadas = 0
+        self.nOperacoesTotais= 0
+
         if(not historiaEntrada):    # esta vazia
             self.historiaEntrada = []
             # Criar historia de forma ciclica
             for t in self.listaDeTransacoes:
-                self.nOperacoes += len(t.listaDeOperacoes)
+                self.nOperacoesTotais += len(t.listaDeOperacoes)
 
-            while(len(self.historiaEntrada) != self.nOperacoes):
+            while(self.nOperacoesRealizadas != self.nOperacoesTotais):
                 for t in self.listaDeTransacoes:
                     if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting and not t.isOver):
                         proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
                         if(proximaOperacao.tipoDeOperacao == 'c'):
                             t.isOver = True
-                            self.nOperacoes = self.nOperacoes + 1
+                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                             self.historiaEntrada.append(proximaOperacao)
                             self.liberarBloqueios(proximaOperacao)
 
@@ -36,11 +36,11 @@ class Escalonador(object):
 
                         if(self.lockMan.transacoesCanceladas):  #Se tiver alguma transacao em transacoes canceladas ele vai fazer o seguinte
                             for t in self.lockMan.transacoesCanceladas:
-                                self.nOperacoes = self.nOperacoes - t.indiceProximaOperacao
+                                self.nOperacoesRealizadas = self.nOperacoesRealizadas - t.indiceProximaOperacao
                                 self.rollbackTransacao(t)
 
                         if(not t.isWaiting):
-                            self.nOperacoes = self.nOperacoes + 1
+                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                             self.historiaEntrada.append(proximaOperacao)
                             t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
@@ -82,7 +82,7 @@ class Escalonador(object):
                 objeto.transacaoXLock = t
                 self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacao)
                 t.isWaiting = False
-                self.nOperacoes = self.nOperacoes + 1
+                self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                 self.historiaEntrada.append(proximaOperacao)
                 t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
@@ -103,7 +103,7 @@ class Escalonador(object):
                     objeto.transacaoXLock = t
                     self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacaoDaTransacaoMaisVelha)
                     t.isWaiting = False
-                    self.nOperacoes = self.nOperacoes + 1
+                    self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                     self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
                     t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                     del objeto.listaDeEspera[0]
@@ -117,7 +117,7 @@ class Escalonador(object):
                         objeto.listaDeBloqueioCompartilhado.append(t)
                         self.lockMan.addInTransacoesComSharedLock(proximaOperacaoDaTransacaoMaisVelha)
                         t.isWaiting = False
-                        self.nOperacoes = self.nOperacoes + 1
+                        self.eOperacoesRealizadas = self.nOperacoesRealizadas + 1
                         self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                         indice = indice + 1
