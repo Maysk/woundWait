@@ -16,17 +16,19 @@ class Escalonador(object):
         if(not historiaEntrada):    # esta vazia
             self.historiaEntrada = []
             # Criar historia de forma ciclica
-            nOperacoes = 0
             for t in self.listaDeTransacoes:
-                nOperacoes += len(t.listaDeOperacoes)
+                self.nOperacoes += len(t.listaDeOperacoes)
 
-            while(len(self.historiaEntrada) != nOperacoes):
+            while(len(self.historiaEntrada) != self.nOperacoes):
                 for t in self.listaDeTransacoes:
-                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting):
+                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting and not t.isOver):
                         proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
                         if(proximaOperacao.tipoDeOperacao == 'c'):
+                            t.isOver = True
+                            self.nOperacoes = self.nOperacoes + 1
                             self.historiaEntrada.append(proximaOperacao)
                             self.liberarBloqueios(proximaOperacao)
+
                         elif(proximaOperacao.tipoDeOperacao=='r'):
                             self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
                         elif(proximaOperacao.tipoDeOperacao=='w'):
@@ -34,8 +36,11 @@ class Escalonador(object):
 
                         if(self.lockMan.transacoesCanceladas):  #Se tiver alguma transacao em transacoes canceladas ele vai fazer o seguinte
                             for t in self.lockMan.transacoesCanceladas:
+                                self.nOperacoes = self.nOperacoes - t.indiceProximaOperacao
                                 self.rollbackTransacao(t)
+
                         if(not t.isWaiting):
+                            self.nOperacoes = self.nOperacoes + 1
                             self.historiaEntrada.append(proximaOperacao)
                             t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
@@ -54,8 +59,6 @@ class Escalonador(object):
         transacao.indiceProximaOperacao = 0
         transacao.isWaiting = False
         self.historiaEntrada.append("a"+transacao.nomeDaTransacao.split("T")[1]+"()")
-
-
 
     def liberarBloqueios(self, transacao):
         self.liberarSLocksDaTransacao(transacao)
@@ -79,6 +82,7 @@ class Escalonador(object):
                 objeto.transacaoXLock = t
                 self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacao)
                 t.isWaiting = False
+                self.nOperacoes = self.nOperacoes + 1
                 self.historiaEntrada.append(proximaOperacao)
                 t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
@@ -99,6 +103,7 @@ class Escalonador(object):
                     objeto.transacaoXLock = t
                     self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacaoDaTransacaoMaisVelha)
                     t.isWaiting = False
+                    self.nOperacoes = self.nOperacoes + 1
                     self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
                     t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                     del objeto.listaDeEspera[0]
@@ -112,6 +117,7 @@ class Escalonador(object):
                         objeto.listaDeBloqueioCompartilhado.append(t)
                         self.lockMan.addInTransacoesComSharedLock(proximaOperacaoDaTransacaoMaisVelha)
                         t.isWaiting = False
+                        self.nOperacoes = self.nOperacoes + 1
                         self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                         indice = indice + 1
