@@ -46,14 +46,14 @@ class GerenciadorDeBloqueio:
             objeto =  self.objetosGerenciados[operacao.objetoDaOperacao]
             if(not(objeto.isSharedLocked() or objeto.isExclusiveLocked())): #Objeto livre, sem locks
                 objeto.transacaoXLock = operacao.transacaoResponsavel
-                self.addInTrasacoesComExclusiveLock(operacao)
+                self.addInTransacoesComExclusiveLock(operacao)
 
             elif(objeto.isExclusiveLocked()):
                 comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.transacaoXLock)
                 if(comparacaoDasTransacoes == -1):  # wound
                     self.transacoesCanceladas.append(objeto.transacaoXLock)
                     objeto.transacaoXLock = operacao.transacaoResponsavel
-                    self.addInTrasacoesComExclusiveLock(operacao)
+                    self.addInTransacoesComExclusiveLock(operacao)
 
                 elif(comparacaoDasTransacoes == 1): # wait
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
@@ -78,7 +78,7 @@ class GerenciadorDeBloqueio:
                 tamanhoDaListaDeBloqueioCompartilhado = len(objeto.listaDeBloqueioCompartilhado)
                 if(tamanhoDaListaDeBloqueioCompartilhado == 0):
                     objeto.transacaoXLock = operacao.transacaoResponsavel
-                    self.addInTransacoesComSharedLock(operacao)
+                    self.addInTransacoesComExclusiveLock(operacao)
 
                 elif(tamanhoDaListaDeBloqueioCompartilhado == 1):
                     comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[0])
@@ -86,7 +86,7 @@ class GerenciadorDeBloqueio:
                         del objeto.listaDeBloqueioCompartilhado[0]
                         objeto.transacaoXLock = operacao.transacaoResponsavel
                         self.transacoesComSharedLock[operacao.transacaoResponsavel].remove(operacao.objetoDaOperacao)
-                        self.addInTrasacoesComExclusiveLock(operacao)
+                        self.addInTransacoesComExclusiveLock(operacao)
 
                     else:
                         objeto.listaDeEspera.append(operacao.transacaoResponsavel)
@@ -102,7 +102,7 @@ class GerenciadorDeBloqueio:
             objeto = Objeto()
             objeto.transacaoXLock = operacao.transacaoResponsavel
             self.objetosGerenciados[operacao.objetoDaOperacao] = objeto
-            self.addInTrasacoesComExclusiveLock(operacao)
+            self.addInTransacoesComExclusiveLock(operacao)
 
     def addInTransacoesComSharedLock(self,operacao):
         if(operacao.transacaoResponsavel in self.transacoesComSharedLock):
@@ -111,9 +111,9 @@ class GerenciadorDeBloqueio:
             self.transacoesComSharedLock[operacao.transacaoResponsavel] = []
             self.transacoesComSharedLock[operacao.transacaoResponsavel].append(operacao.objetoDaOperacao)
 
-    def addInTrasacoesComExclusiveLock(self,operacao):
-        if(operacao.transacaoResponsavel in self.transacoesComSharedLock):
+    def addInTransacoesComExclusiveLock(self,operacao):
+        if(operacao.transacaoResponsavel in self.transacoesComExclusiveLock):
             self.transacoesComExclusiveLock[operacao.transacaoResponsavel].append(operacao.objetoDaOperacao)
         else:
-            self.transacoesComSharedLock[operacao.transacaoResponsavel] = []
-            self.transacoesComSharedLock[operacao.transacaoResponsavel].append(operacao.objetoDaOperacao)
+            self.transacoesComExclusiveLock[operacao.transacaoResponsavel] = []
+            self.transacoesComExclusiveLock[operacao.transacaoResponsavel].append(operacao.objetoDaOperacao)
