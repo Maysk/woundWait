@@ -1,8 +1,8 @@
 from Transacao import Transacao
 from Operacao import Operacao
 from GerenciadorDeBloqueio import GerenciadorDeBloqueio
-from PyQt4.QtGui import * 
-from PyQt4.QtCore import * 
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 import sys
 
 class Escalonador(object):
@@ -18,8 +18,8 @@ class Escalonador(object):
             # Criar historia de forma ciclica
             for t in self.listaDeTransacoes:
                 self.nOperacoesTotais += len(t.listaDeOperacoes)
+
             print "Total: ",self.nOperacoesTotais
-            self.nOperacoesTotais =self.nOperacoesTotais - 3 #Teste @tidi Turar ussi
 
             while(self.nOperacoesRealizadas != self.nOperacoesTotais):
                 print self.nOperacoesRealizadas
@@ -29,8 +29,9 @@ class Escalonador(object):
                         if(proximaOperacao.tipoDeOperacao == 'c'):
                             t.isOver = True
                             self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
+                            t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                             self.historiaEntrada.append(proximaOperacao)
-                            self.liberarBloqueios(proximaOperacao)
+                            self.liberarBloqueios(t)
 
                         elif(proximaOperacao.tipoDeOperacao=='r'):
                             self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
@@ -39,29 +40,29 @@ class Escalonador(object):
 
                         if(self.lockMan.transacoesCanceladas):  #Se tiver alguma transacao em transacoes canceladas ele vai fazer o seguinte
                             tamanhoDaListaDeCanceladas = len(self.lockMan.transacoesCanceladas)
-                            for i in range(tamanhoDaListaDeCanceladas):
-                                t = self.lockMan.transacoesCanceladas[0]
-                                self.nOperacoesRealizadas = self.nOperacoesRealizadas - t.indiceProximaOperacao
-                                self.rollbackTransacao(t)
+                            for index in range(tamanhoDaListaDeCanceladas):
+                                transacaoCancelada = self.lockMan.transacoesCanceladas[0]
+                                self.rollbackTransacao(transacaoCancelada)
                                 del self.lockMan.transacoesCanceladas[0]
 
-                        if(not t.isWaiting):
+                        if(not t.isWaiting and not t.isOver):
                             self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                            self.historiaEntrada.append(proximaOperacao)
                             t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                            self.historiaEntrada.append(proximaOperacao)
 
 
             for t in self.listaDeTransacoes:
                 t.indiceProximaOperacao = 0
-        else: 		
+        else:
             self.historiaEntrada = historiaEntrada #Lista de Operacoes
-        
+
         self.historiaSaida = self.historiaEntrada #inicializacao de teste, a historiaSaida devera ser uma lista de operacoes, onde commit e abort tambem sao operacoes
-        self.gerenciadorDeBloqueio = None #Criar classe    
-    
+        self.gerenciadorDeBloqueio = None #Criar classe
+
 
     def rollbackTransacao(self, transacao):
         self.liberarBloqueios(transacao)
+        self.nOperacoesRealizadas = self.nOperacoesRealizadas - transacao.indiceProximaOperacao
         transacao.indiceProximaOperacao = 0
         transacao.isWaiting = False
         op = Operacao("abort","")
@@ -69,8 +70,8 @@ class Escalonador(object):
         self.historiaEntrada.append(op)
 
     def liberarBloqueios(self, transacao):
-        self.liberarSLocksDaTransacao(transacao)
         self.liberarXLocksDaTransacao(transacao)
+        self.liberarSLocksDaTransacao(transacao)
         self.liberarWaits(transacao)
 
 
@@ -91,8 +92,8 @@ class Escalonador(object):
                     self.lockMan.addInTransacoesComExclusiveLock(proximaOperacao)
                     t.isWaiting = False
                     self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                    self.historiaEntrada.append(proximaOperacao)
                     t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                    self.historiaEntrada.append(proximaOperacao)
 
 
     #Funcao para liberar os XLocks feitos por uma transacao e
@@ -111,8 +112,8 @@ class Escalonador(object):
                         objeto.transacaoXLock = t
                         self.lockMan.addInTransacoesComExclusiveLock(proximaOperacaoDaTransacaoMaisVelha)
                         t.isWaiting = False
-                        self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                         self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
+                        self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                         del objeto.listaDeEspera[0]
                         del self.lockMan.transacoesEmWait[t]
@@ -125,7 +126,7 @@ class Escalonador(object):
                             objeto.listaDeBloqueioCompartilhado.append(t)
                             self.lockMan.addInTransacoesComSharedLock(proximaOperacaoDaTransacaoMaisVelha)
                             t.isWaiting = False
-                            self.eOperacoesRealizadas = self.nOperacoesRealizadas + 1
+                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
                             self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
                             t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                             indice = indice + 1
@@ -144,48 +145,48 @@ class Escalonador(object):
         app = QApplication(sys.argv)
         table = QTableWidget()
         tableItem = QTableWidgetItem()
-        
+
         table.setWindowTitle("Trabalho 2 - Escalonador")
-        
-        largura = len(self.listaDeTransacoes)*100+30        
+
+        largura = len(self.listaDeTransacoes)*100+30
         altura = len(self.historiaSaida)*30+30
         if(altura > 900):
             altura = 900
-        
+
         table.resize(largura,altura)
         table.setRowCount(len(self.historiaSaida))
         table.setColumnCount(len(self.listaDeTransacoes))
-        
+
         #Criacao das labels da tabela:
         labelsTransacoes = ''
         for t in self.listaDeTransacoes:
             labelsTransacoes = labelsTransacoes + t.nomeDaTransacao + ';'
-        
+
         table.setHorizontalHeaderLabels(QString(labelsTransacoes).split(";"))
-        
+
         #Loop do preenchimento da tabela:
         linha = 0
         for operacao in self.historiaSaida:
-            
+
             itemInserido = QTableWidgetItem(operacao.tipoDeOperacao + '(' + operacao.objetoDaOperacao + ')')
-            
+
             #Parte das cores das operacoes:
             if(operacao.tipoDeOperacao == 'commit'):
                 itemInserido.setTextColor(QColor(0,128,0))
             if(operacao.tipoDeOperacao == 'abort'):
                 itemInserido.setTextColor(QColor(220,20,60))
-                
+
             #Identificar a transacao de cada operacao:
             indiceTransacao = 0
             for indiceIterativo in range(0,len(self.listaDeTransacoes)):
                 if(operacao in self.listaDeTransacoes[indiceIterativo].listaDeOperacoes):
                     indiceTransacao = indiceIterativo
-            
+
             table.setItem(linha,indiceTransacao,itemInserido)
-                
+
             linha = linha + 1
-        
-        table.show()        
+
+        table.show()
         return app.exec_()
-        
-        
+
+
