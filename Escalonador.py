@@ -10,7 +10,9 @@ class Escalonador(object):
         self.listaDeTransacoes = listaDeTransacoes
         self.grafoDeEspera = '' # String marcando o Wait For Graph
         self.lockMan = GerenciadorDeBloqueio()
-        
+        self.nOperacoes = 0 ##
+                            ##
+                            ##
         if(not historiaEntrada):    # esta vazia
             self.historiaEntrada = []
             # Criar historia de forma ciclica
@@ -25,17 +27,18 @@ class Escalonador(object):
                         if(proximaOperacao.tipoDeOperacao == 'c'):
                             self.historiaEntrada.append(proximaOperacao)
                             self.liberarBloqueios(proximaOperacao)
-
-                        if(proximaOperacao.tipoDeOperacao=='r'):
+                        elif(proximaOperacao.tipoDeOperacao=='r'):
                             self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
                         elif(proximaOperacao.tipoDeOperacao=='w'):
                             self.lockMan.pedirBloqueioExclusivo(proximaOperacao)
-                        elif(proximaOperacao.tipoDeOperacao=='c'):
-                            pass
 
+                        if(self.lockMan.transacoesCanceladas):  #Se tiver alguma transacao em transacoes canceladas ele vai fazer o seguinte
+                            for t in self.lockMan.transacoesCanceladas:
+                                self.rollbackTransacao(t)
+                        if(not t.isWaiting):
+                            self.historiaEntrada.append(proximaOperacao)
+                            t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
-                        self.historiaEntrada.append(proximaOperacao)
-                        t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
             for t in self.listaDeTransacoes:
                 t.indiceProximaOperacao = 0
@@ -45,24 +48,82 @@ class Escalonador(object):
         self.historiaSaida = self.historiaEntrada #inicializacao de teste, a historiaSaida devera ser uma lista de operacoes, onde commit e abort tambem sao operacoes
         self.gerenciadorDeBloqueio = None #Criar classe    
     
-    
-    def liberarBloqueios(self,transacao):
+
+    def rollbackTransacao(self, transacao):
+        self.liberarBloqueios(transacao)
+        transacao.indiceProximaOperacao = 0
+        transacao.isWaiting = False
+        self.historiaEntrada.append("a"+transacao.nomeDaTransacao.split("T")[1]+"()")
+
+
+
+    def liberarBloqueios(self, transacao):
+        self.liberarSLocksDaTransacao(transacao)
+        self.liberarXLocksDaTransacao(transacao)
+        self.liberarWaits(transacao)
+
+
+    def liberarSLocksDaTransacao(self,transacao):
         if(transacao in self.lockMan.transacoesComSharedLock):
             SLockList = self.lockMan.transacoesComSharedLock[transacao]
-
-        if(transacao in self.lockMan.transacoesComExclusiveLock):
-            XLockList = self.lockMan.transacoesComExclusiveLock[transacao]
-
-
+            del self.lockMan.transacoesComSharedLock[transacao]
         for obj in SLockList:
             objeto = self.lockMan.objetosGerenciados[obj]
             objeto.listaDeBloqueioCompartilhado.remove(transacao)
             objeto.listaDeEspera.sort()
+            if(objeto.listaDeEspera):
+                t = objeto.listaDeEspera[0]
+                del objeto.listaDeEspera[0]
+                del self.lockMan.transacoesEmWait[t]
+                proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
+                objeto.transacaoXLock = t
+                self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacao)
+                t.isWaiting = False
+                self.historiaEntrada.append(proximaOperacao)
+                t.indiceProximaOperacao = t.indiceProximaOperacao + 1
 
+
+    #Funcao para liberar os XLocks feitos por uma transacao e
+    def liberarXLocksDaTransacao(self,transacao):
+        if(transacao in self.lockMan.transacoesComExclusiveLock):
+            XLockList = self.lockMan.transacoesComExclusiveLock[transacao]
+            del self.lockMan.transacoesComExclusiveLock[transacao]
         for obj in XLockList:
             objeto = self.lockMan.objetosGerenciados[obj]
             objeto.transacaoXLock = None
             objeto.listaDeEspera.sort()
+            if(objeto.listaDeEspera):
+                t = objeto.listaDeEspera[0]
+                proximaOperacaoDaTransacaoMaisVelha = t.listaDeOperacoes[t.indiceProximaOperacao]
+                if(proximaOperacaoDaTransacaoMaisVelha.tipoDeOperacao == 'w'):
+                    objeto.transacaoXLock = t
+                    self.lockMan.addInTrasacoesComExclusiveLock(proximaOperacaoDaTransacaoMaisVelha)
+                    t.isWaiting = False
+                    self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
+                    t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                    del objeto.listaDeEspera[0]
+                    del self.lockMan.transacoesEmWait[t]
+
+                elif(proximaOperacaoDaTransacaoMaisVelha.tipoDeOperacao == 'r'):
+                    tamanhoDaLista = len(objeto.listaDeEspera)
+                    indice = 0
+                    while(proximaOperacaoDaTransacaoMaisVelha != 'w' and indice < tamanhoDaLista):
+                        t = objeto.listaDeEspera[0]
+                        objeto.listaDeBloqueioCompartilhado.append(t)
+                        self.lockMan.addInTransacoesComSharedLock(proximaOperacaoDaTransacaoMaisVelha)
+                        t.isWaiting = False
+                        self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
+                        t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                        indice = indice + 1
+                        del objeto.listaDeEspera[0]
+                        del self.lockMan.transacoesEmWait[t]
+
+    def liberarWaits(self,transacao):
+        if(transacao in self.lockMan.transacoesEmWait):
+            objetoEsperado = self.lockMan.transacoesEmWait[transacao]
+            del self.lockMan.transacoesEmWait[transacao]
+            objetoEsperado.listaDeEspera.remove(transacao)
+            transacao.isWaiting = False
 
 
     def showTable(self):
