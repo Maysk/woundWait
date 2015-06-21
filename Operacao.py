@@ -10,21 +10,3 @@ class Operacao(object):
         self.tipoDeOperacao = tipoDeOperacao    
         self.objetoDaOperacao = objetoDaOperacao
         self.transacaoResponsavel = None
-
-
-    def setTransacaoResponsavel(self, transacaoResponsavel):
-        self.transacaoResponsavel = transacaoResponsavel
-
-
-
-
-
-
-
-
-    #def causaConflito(self,outraOperacao):
-    #   if((self.tipoDeOperacao == 'write' or outraOperacao.tipoDeOperacao == 'write') and self.transacaoReponsavel.nomeDaTransacao != outraOperacao.transacaoReponsavel.nomeDaTransacao and self.objetoDaTransacao == outraOperacao.objetoDaTransacao):
-    #      return True
-    # return False
-    #mudar causaConflito para o Gerenciador de Bloqueio
-    

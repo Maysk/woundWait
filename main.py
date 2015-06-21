@@ -2,7 +2,6 @@ from Transacao import Transacao
 from Operacao import Operacao
 from Escalonador import Escalonador
 
-
 t1 = Transacao("Transacao 1")
 t2 = Transacao("Transacao 2")
 t3 = Transacao("Transacao 3")
@@ -13,9 +12,11 @@ op3 = Operacao('write','Z')
 op4 = Operacao('commit')
 op5 = Operacao('abort')
 
-t1.setListaDeOperacoes([op1, op2, op5])
-t2.setListaDeOperacoes([op3])
-t3.setListaDeOperacoes([op4])
+t1.adicionarOperacao(op1)
+t1.adicionarOperacao(op2)
+t1.adicionarOperacao(op5)
+t2.adicionarOperacao(op3)
+t3.adicionarOperacao(op4)
 
 e1 = Escalonador([t1,t2,t3]) #exemplo inutil, claro
 

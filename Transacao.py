@@ -17,6 +17,7 @@ class Transacao(object):
         self.listaDeOperacoes = []
         self.indiceProximaOperacao = 0
         self.isWaiting = False
+        self.isAborted = False
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()
         else: #se for Linux ou outro
@@ -30,10 +31,6 @@ class Transacao(object):
         operacao.transacaoResponsavel = self
         self.listaDeOperacoes.append(operacao)
 
-    def setListaDeOperacoes(self, listaDeOperacoes):
-        self.listaDeOperacoes = listaDeOperacoes
-
-
     def abort(self):
-        return None
+        return
 

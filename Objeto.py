@@ -12,7 +12,7 @@ class Objeto:
             return False
 
     def isExclusiveLocked(self):
-        if( len(self.transacaoXLock) != None):
+        if(self.transacaoXLock != None):
             return True
         else:
             return False

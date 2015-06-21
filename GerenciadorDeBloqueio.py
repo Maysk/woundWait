@@ -2,18 +2,20 @@ from Transacao import Transacao
 from Operacao import Operacao
 from Objeto import Objeto
 
+
 class GerenciadorDeBloqueio:
     def __init__(self):
-        self.objetosGerenciados = {}    ##Key: nome da operacao, Value: [tipoDaOperacao, operac
+        self.objetosGerenciados = {}    ##Key: Nome do Objeto, Value: Objeto
+        self.transacoesComSharedLock = {}   ##Key: Transacao, Value: Objetos
+        self.transacoesComExclusiveLock = {}    ##Key: Transacao, Value: Objetos
+        self.transacoesEmWait = {}  ##Key Transacao, Value: Objeto
+
 
     def pedirBloqueioCompartilhado(self, operacao):
-        #if(operacao.objetoDaOperacao in self.objetosGerenciados):
         try:
             objeto = self.objetosGerenciados[operacao.objetoDaOperacao]
-
             if(objeto.isExclusiveLocked()):
                 comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.transacaoXLock)
-
                 if(comparacaoDasTransacoes == -1):
                     objeto.transacaoXLock.transacaoResponsavel.abort()
                     objeto.transacaoXLock = None
@@ -22,9 +24,10 @@ class GerenciadorDeBloqueio:
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                     operacao.transacaoResponsavel.isWaiting = True
                 else:
-                    pass #Existe algo pra colocar aqui
+                    pass #Existe algo pra colocar aqui?
 
-            else:   #Caso ja exista um bloqueio compartilhado ou o objeto ta livre
+            #Caso ja exista um bloqueio compartilhado ou o objeto ta livre
+            else:
                 #Tenta achar a transacao na lista, caso ela nao exista ele adiciona
                 try:
                     objeto.listaDeBloqueioCompartilhado.index(operacao.transacaoResponsavel)
@@ -35,7 +38,6 @@ class GerenciadorDeBloqueio:
             objeto = Objeto()
             objeto.listaDeBloqueioCompartilhado.append(operacao.transacaoResponsavel)
             self.objetosGerenciados[operacao.objetoDaOperacao] = objeto
-
 
 
 
@@ -87,3 +89,8 @@ class GerenciadorDeBloqueio:
             objeto.isXBlock = True
             objeto.transacaoXLock = operacao.transacaoResponsavel
             self.objetosGerenciados[operacao.objetoDaOperacao] = objeto
+
+
+
+
+

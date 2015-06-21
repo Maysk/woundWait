@@ -1,5 +1,6 @@
 from Transacao import Transacao
 from Operacao import Operacao
+from GerenciadorDeBloqueio import GerenciadorDeBloqueio
 from PyQt4.QtGui import * 
 from PyQt4.QtCore import * 
 import sys
@@ -8,7 +9,7 @@ class Escalonador(object):
     def __init__(self, listaDeTransacoes, historiaEntrada = []):
         self.listaDeTransacoes = listaDeTransacoes
         self.grafoDeEspera = '' #String marcando o Wait For Graph
-        
+        self.lockMan = GerenciadorDeBloqueio()
         
         if(not historiaEntrada):#esta vazia
             self.historiaEntrada = []
@@ -16,11 +17,21 @@ class Escalonador(object):
             nOperacoes = 0
             for t in self.listaDeTransacoes:
                 nOperacoes += len(t.listaDeOperacoes)
+
             while(len(self.historiaEntrada) != nOperacoes):
                 for t in self.listaDeTransacoes:
-                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes)):
-                        self.historiaEntrada.append(t.listaDeOperacoes[t.indiceProximaOperacao])
+                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting):
+                        proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
+                        if(proximaOperacao.tipoDeOperacao=='r'):
+                            self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
+                        elif(proximaOperacao.tipoDeOperacao=='w'):
+                            self.lockMan.pedirBloqueioExclusivo(proximaOperacao)
+                        elif(proximaOperacao.tipoDeOperacao=='c'):
+                            pass
+
+                        self.historiaEntrada.append(proximaOperacao)
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+
             for t in self.listaDeTransacoes:
                 t.indiceProximaOperacao = 0
         else: 		
@@ -30,8 +41,8 @@ class Escalonador(object):
         self.gerenciadorDeBloqueio = None #Criar classe    
     
     
-    
-    
+
+
     def showTable(self):
         app = QApplication(sys.argv)
         table = QTableWidget()
