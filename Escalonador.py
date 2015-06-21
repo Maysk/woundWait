@@ -3,6 +3,7 @@ from Operacao import Operacao
 from GerenciadorDeBloqueio import GerenciadorDeBloqueio
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from Desenho import *
 import sys
 
 class Escalonador(object):
@@ -185,8 +186,8 @@ class Escalonador(object):
             table.setItem(linha,indiceTransacao,itemInserido)
 
             linha = linha + 1
-
+    
+        grafo = Desenho(self.listaDeTransacoes, waitForGraph =[])
+        grafo.show()
         table.show()
         return app.exec_()
-
-
