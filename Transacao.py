@@ -18,6 +18,10 @@ class Transacao(object):
         self.indiceProximaOperacao = 0
         self.isWaiting = False
         self.isAborted = False
+
+
+
+
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()
         else: #se for Linux ou outro

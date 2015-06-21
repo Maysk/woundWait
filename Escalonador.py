@@ -8,12 +8,12 @@ import sys
 class Escalonador(object):
     def __init__(self, listaDeTransacoes, historiaEntrada = []):
         self.listaDeTransacoes = listaDeTransacoes
-        self.grafoDeEspera = '' #String marcando o Wait For Graph
+        self.grafoDeEspera = '' # String marcando o Wait For Graph
         self.lockMan = GerenciadorDeBloqueio()
         
-        if(not historiaEntrada):#esta vazia
+        if(not historiaEntrada):    # esta vazia
             self.historiaEntrada = []
-            #Criar historia de forma ciclica
+            # Criar historia de forma ciclica
             nOperacoes = 0
             for t in self.listaDeTransacoes:
                 nOperacoes += len(t.listaDeOperacoes)
@@ -22,12 +22,17 @@ class Escalonador(object):
                 for t in self.listaDeTransacoes:
                     if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting):
                         proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
+                        if(proximaOperacao.tipoDeOperacao == 'c'):
+                            self.historiaEntrada.append(proximaOperacao)
+                            self.liberarBloqueios(proximaOperacao)
+
                         if(proximaOperacao.tipoDeOperacao=='r'):
                             self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
                         elif(proximaOperacao.tipoDeOperacao=='w'):
                             self.lockMan.pedirBloqueioExclusivo(proximaOperacao)
                         elif(proximaOperacao.tipoDeOperacao=='c'):
                             pass
+
 
                         self.historiaEntrada.append(proximaOperacao)
                         t.indiceProximaOperacao = t.indiceProximaOperacao + 1
@@ -41,6 +46,23 @@ class Escalonador(object):
         self.gerenciadorDeBloqueio = None #Criar classe    
     
     
+    def liberarBloqueios(self,transacao):
+        if(transacao in self.lockMan.transacoesComSharedLock):
+            SLockList = self.lockMan.transacoesComSharedLock[transacao]
+
+        if(transacao in self.lockMan.transacoesComExclusiveLock):
+            XLockList = self.lockMan.transacoesComExclusiveLock[transacao]
+
+
+        for obj in SLockList:
+            objeto = self.lockMan.objetosGerenciados[obj]
+            objeto.listaDeBloqueioCompartilhado.remove(transacao)
+            objeto.listaDeEspera.sort()
+
+        for obj in XLockList:
+            objeto = self.lockMan.objetosGerenciados[obj]
+            objeto.transacaoXLock = None
+            objeto.listaDeEspera.sort()
 
 
     def showTable(self):
