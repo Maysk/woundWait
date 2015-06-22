@@ -18,6 +18,7 @@ class Transacao(object):
         self.indiceProximaOperacao = 0
         self.isWaiting = False
         self.isOver = False
+        self.indiceDaUltimaOperacaoNaHistoria = 0 #Guarda uma referecia para ultima operacao de t apontada pelo indice da historia
 
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()

@@ -10,6 +10,7 @@ ioHandler = GerenciadorDeArquivos()
 [listaDeTransacoes, historiaEntrada] = ioHandler.lerEntrada()
 
 e1 = Escalonador(listaDeTransacoes,historiaEntrada)
-    
+e1.escalona()
+e1.showTable()
 ioHandler.escreverSaida(e1.historiaSaida)
 

@@ -13,52 +13,74 @@ class Escalonador(object):
         self.lockMan = GerenciadorDeBloqueio()
         self.nOperacoesRealizadas = 0
         self.nOperacoesTotais= 0
+        self.indiceHistoriaEntrada = 0
 
-        if(not historiaEntrada):    # esta vazia
+        if(not historiaEntrada):#esta vazia
             self.historiaEntrada = []
-            # Criar historia de forma ciclica
+            #Criar historia de forma ciclica
             for t in self.listaDeTransacoes:
                 self.nOperacoesTotais += len(t.listaDeOperacoes)
-
-            print "Total: ",self.nOperacoesTotais
-
-            while(self.nOperacoesRealizadas != self.nOperacoesTotais):
-                print self.nOperacoesRealizadas
+            while(len(self.historiaEntrada) != self.nOperacoesTotais):
                 for t in self.listaDeTransacoes:
-                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes) and not t.isWaiting and not t.isOver):
-                        proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
-                        if(proximaOperacao.tipoDeOperacao == 'c'):
-                            t.isOver = True
-                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                            t.indiceProximaOperacao = t.indiceProximaOperacao + 1
-                            self.historiaEntrada.append(proximaOperacao)
-                            self.liberarBloqueios(t)
-
-                        elif(proximaOperacao.tipoDeOperacao=='r'):
-                            self.lockMan.pedirBloqueioCompartilhado(proximaOperacao)
-                        elif(proximaOperacao.tipoDeOperacao=='w'):
-                            self.lockMan.pedirBloqueioExclusivo(proximaOperacao)
-
-                        if(self.lockMan.transacoesCanceladas):  #Se tiver alguma transacao em transacoes canceladas ele vai fazer o seguinte
-                            tamanhoDaListaDeCanceladas = len(self.lockMan.transacoesCanceladas)
-                            for index in range(tamanhoDaListaDeCanceladas):
-                                transacaoCancelada = self.lockMan.transacoesCanceladas[0]
-                                self.rollbackTransacao(transacaoCancelada)
-                                del self.lockMan.transacoesCanceladas[0]
-
-                        if(not t.isWaiting and not t.isOver):
-                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                            t.indiceProximaOperacao = t.indiceProximaOperacao + 1
-                            self.historiaEntrada.append(proximaOperacao)
-
-
+                    if(t.indiceProximaOperacao < len(t.listaDeOperacoes)):
+                        self.historiaEntrada.append(t.listaDeOperacoes[t.indiceProximaOperacao])
+                        t.indiceProximaOperacao = t.indiceProximaOperacao + 1
             for t in self.listaDeTransacoes:
                 t.indiceProximaOperacao = 0
         else:
+            self.nOperacoesTotais = len(historiaEntrada)
             self.historiaEntrada = historiaEntrada #Lista de Operacoes
 
-        self.historiaSaida = self.historiaEntrada #inicializacao de teste, a historiaSaida devera ser uma lista de operacoes, onde commit e abort tambem sao operacoes
-        self.gerenciadorDeBloqueio = None #Criar classe
+
+        self.historiaSaida = []
+
+
+
+
+
+    def escalona(self):
+        while(self.indiceHistoriaEntrada < self.nOperacoesTotais):
+            proximaOperacao = self.historiaEntrada[self.indiceHistoriaEntrada]
+            self.realizarOperacao(proximaOperacao)
+            proximaOperacao.transacaoResponsavel.indiceDaUltimaOperacaoNaHistoria = proximaOperacao.transacaoResponsavel.indiceDaUltimaOperacaoNaHistoria + 1
+            self.indiceHistoriaEntrada = self.indiceHistoriaEntrada + 1
+
+
+
+    def realizarOperacao(self, operacao):
+        t = operacao.transacaoResponsavel
+        if(not t.isWaiting):
+            if(operacao.tipoDeOperacao == 'c'):
+                t.isOver = True
+                self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
+                t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                self.historiaSaida.append(operacao)
+                self.liberarBloqueios(t)
+            elif(operacao.tipoDeOperacao=='r'):
+                self.lockMan.pedirBloqueioCompartilhado(operacao)
+            elif(operacao.tipoDeOperacao=='w'):
+                self.lockMan.pedirBloqueioExclusivo(operacao)
+
+            if(self.lockMan.transacoesCanceladas):
+                tamanhoDaListaDeCanceladas = len(self.lockMan.transacoesCanceladas)
+                for index in range(tamanhoDaListaDeCanceladas):
+                    transacaoCancelada = self.lockMan.transacoesCanceladas[0]
+                    del self.lockMan.transacoesCanceladas[0]
+                    self.rollbackTransacao(transacaoCancelada)
+                    self.reiniciarTransacao(transacaoCancelada)
+
+            if(not t.isWaiting and not t.isOver):
+                self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
+                t.indiceProximaOperacao = t.indiceProximaOperacao + 1
+                self.historiaSaida.append(operacao)
+
+
+    def reiniciarTransacao(self, transacao):
+        while(transacao.indiceProximaOperacao<= transacao.indiceDaUltimaOperacaoNaHistoria and not transacao.isWaiting):
+            self.realizarOperacao(transacao.listaDeOperacoes[transacao.indiceProximaOperacao])
+
+
+
 
 
     def rollbackTransacao(self, transacao):
@@ -66,13 +88,13 @@ class Escalonador(object):
         self.nOperacoesRealizadas = self.nOperacoesRealizadas - transacao.indiceProximaOperacao
         transacao.indiceProximaOperacao = 0
         transacao.isWaiting = False
-        op = Operacao("abort","")
+        op = Operacao('abort',"")
         op.transacaoResponsavel = transacao
-        self.historiaEntrada.append(op)
+        self.historiaSaida.append(op)
 
     def liberarBloqueios(self, transacao):
-        self.liberarXLocksDaTransacao(transacao)
         self.liberarSLocksDaTransacao(transacao)
+        self.liberarXLocksDaTransacao(transacao)
         self.liberarWaits(transacao)
 
 
@@ -88,16 +110,12 @@ class Escalonador(object):
                     t = objeto.listaDeEspera[0]
                     del objeto.listaDeEspera[0]
                     del self.lockMan.transacoesEmWait[t]
-                    proximaOperacao = t.listaDeOperacoes[t.indiceProximaOperacao]
-                    objeto.transacaoXLock = t
-                    self.lockMan.addInTransacoesComExclusiveLock(proximaOperacao)
                     t.isWaiting = False
-                    self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                    t.indiceProximaOperacao = t.indiceProximaOperacao + 1
-                    self.historiaEntrada.append(proximaOperacao)
+                    objeto.transacaoXLock = None
+                    while(t.indiceProximaOperacao<t.indiceDaUltimaOperacaoNaHistoria and not t.isWaiting):
+                        self.realizarOperacao(t.listaDeOperacoes[t.indiceProximaOperacao])
 
 
-    #Funcao para liberar os XLocks feitos por uma transacao e
     def liberarXLocksDaTransacao(self,transacao):
         if(transacao in self.lockMan.transacoesComExclusiveLock):
             XLockList = self.lockMan.transacoesComExclusiveLock[transacao]
@@ -110,33 +128,28 @@ class Escalonador(object):
                     t = objeto.listaDeEspera[0]
                     proximaOperacaoDaTransacaoMaisVelha = t.listaDeOperacoes[t.indiceProximaOperacao]
                     if(proximaOperacaoDaTransacaoMaisVelha.tipoDeOperacao == 'w'):
-                        objeto.transacaoXLock = t
-                        self.lockMan.addInTransacoesComExclusiveLock(proximaOperacaoDaTransacaoMaisVelha)
                         t.isWaiting = False
-                        self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
-                        self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                        t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                         del objeto.listaDeEspera[0]
                         del self.lockMan.transacoesEmWait[t]
+                        while(t.indiceProximaOperacao<t.indiceDaUltimaOperacaoNaHistoria and not t.isWaiting):
+                            self.realizarOperacao(t.listaDeOperacoes[t.indiceProximaOperacao])
 
                     elif(proximaOperacaoDaTransacaoMaisVelha.tipoDeOperacao == 'r'):
                         tamanhoDaLista = len(objeto.listaDeEspera)
                         indice = 0
                         while(proximaOperacaoDaTransacaoMaisVelha != 'w' and indice < tamanhoDaLista):
                             t = objeto.listaDeEspera[0]
-                            objeto.listaDeBloqueioCompartilhado.append(t)
-                            self.lockMan.addInTransacoesComSharedLock(proximaOperacaoDaTransacaoMaisVelha)
                             t.isWaiting = False
-                            self.nOperacoesRealizadas = self.nOperacoesRealizadas + 1
-                            self.historiaEntrada.append(proximaOperacaoDaTransacaoMaisVelha)
-                            t.indiceProximaOperacao = t.indiceProximaOperacao + 1
                             indice = indice + 1
                             del objeto.listaDeEspera[0]
                             del self.lockMan.transacoesEmWait[t]
+                            while(t.indiceProximaOperacao < t.indiceDaUltimaOperacaoNaHistoria and not t.isWaiting):
+                                self.realizarOperacao(t.listaDeOperacoes[t.indiceProximaOperacao])
 
     def liberarWaits(self,transacao):
         if(transacao in self.lockMan.transacoesEmWait):
-            objetoEsperado = self.lockMan.transacoesEmWait[transacao]
+            KeyObjetoEsperado = self.lockMan.transacoesEmWait[transacao]
+            objetoEsperado = self.lockMan.objetosGerenciados[KeyObjetoEsperado]
             del self.lockMan.transacoesEmWait[transacao]
             objetoEsperado.listaDeEspera.remove(transacao)
             transacao.isWaiting = False

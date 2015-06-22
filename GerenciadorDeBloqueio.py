@@ -68,7 +68,7 @@ class GerenciadorDeBloqueio:
                 tamanhoDaListaDeBloqueioCompartilhado = len(objeto.listaDeBloqueioCompartilhado)
                 i = 0
                 comparacaoDasTransacoes = -1
-                while(i<tamanhoDaListaDeBloqueioCompartilhado and comparacaoDasTransacoes!=-1):
+                while(i<tamanhoDaListaDeBloqueioCompartilhado and comparacaoDasTransacoes==-1):
                     comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
                     if(comparacaoDasTransacoes == -1):
                         self.transacoesCanceladas.append(objeto.listaDeBloqueioCompartilhado[i])
