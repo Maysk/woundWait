@@ -26,6 +26,7 @@ class GerenciadorDeBloqueio:
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                     operacao.transacaoResponsavel.isWaiting = True
                     self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
+                    operacao.transacaoResponsavel.inserirNoWaitFor(objeto.transacaoXLock)
 
                 else:   # comparacaoDasTransacoes == 0
                     pass
