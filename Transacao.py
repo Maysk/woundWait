@@ -19,6 +19,7 @@ class Transacao(object):
         self.isWaiting = False
         self.isOver = False
         self.indiceDaUltimaOperacaoNaHistoria = 0 #Guarda uma referecia para ultima operacao de t apontada pelo indice da historia
+        self.waitFor = []
 
         if(os.name == 'nt'): #se for Windows
             self.timeStampDaTransacao = time.clock()
@@ -33,6 +34,7 @@ class Transacao(object):
         operacao.transacaoResponsavel = self
         self.listaDeOperacoes.append(operacao)
 
-    def abort(self):
-        return
+    def inserirNoWaitFor(self,transacao):
+        if(transacao not in self.waitFor):
+            self.waitFor.append(transacao)
 

@@ -59,15 +59,16 @@ class GerenciadorDeBloqueio:
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                     operacao.transacaoResponsavel.isWaiting = True
                     self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
+                    operacao.transacaoResponsavel.inserirNoWaitFor(objeto.transacaoXLock)
 
                 else:   # Precisa colocar algo aqui?
                     pass
 
             else:
-                objeto.listaDeBloqueioCompartilhado.sort()
+                objeto.listaDeBloqueioCompartilhado.sort(reverse = True)
                 tamanhoDaListaDeBloqueioCompartilhado = len(objeto.listaDeBloqueioCompartilhado)
                 i = 0
-                comparacaoDasTransacoes = -1
+                comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
                 while(i<tamanhoDaListaDeBloqueioCompartilhado and comparacaoDasTransacoes==-1):
                     comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
                     if(comparacaoDasTransacoes == -1):
@@ -88,15 +89,16 @@ class GerenciadorDeBloqueio:
                         self.transacoesComSharedLock[operacao.transacaoResponsavel].remove(operacao.objetoDaOperacao)
                         self.addInTransacoesComExclusiveLock(operacao)
 
-                    else:
+                    else:   # wait
                         objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                         operacao.transacaoResponsavel.isWaiting = True
                         self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
-
-                else:
+                        operacao.transacaoResponsavel.inserirNoWaitFor(objeto.listaDeBloqueioCompartilhado[0])
+                else:   #wait
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                     operacao.transacaoResponsavel.isWaiting = True
                     self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
+                    operacao.transacaoResponsavel.inserirNoWaitFor(objeto.listaDeBloqueioCompartilhado[0])
 
         except KeyError:
             objeto = Objeto()
