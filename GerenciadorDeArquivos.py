@@ -61,10 +61,26 @@ class GerenciadorDeArquivos:
         return [listaTransacoes,historiaCustomizada]
     
     
-    def escreverSaida(self, historiaSaida, nomeArquivoSaida = 'historiaSaida.luke' ):
-        arquivoSaida = open(nomeArquivoSaida,'w')        
-        arquivoSaida.write('Historia de Saida:\n\n')
+    def escreverSaida(self, listaTransacoes,historiaEntrada,historiaSaida, nomeArquivoSaida = 'historiaSaida.luke' ):
+        arquivoSaida = open(nomeArquivoSaida,'w')    
+        
+        arquivoSaida.write('Historia de Entrada: ')
+        for operacao in historiaEntrada:
+            arquivoSaida.write(operacao.tipoDeOperacao + operacao.transacaoResponsavel.nomeDaTransacao.replace('T','')+'('+operacao.objetoDaOperacao+')')
+        arquivoSaida.write('\nHistoria de Saida: ')
         for operacao in historiaSaida:
-            arquivoSaida.write(operacao.tipoDeOperacao + operacao.transacaoResponsavel.nomeDaTransacao.replace('T','')+'('+operacao.objetoDaOperacao+')\n')        
+            if(operacao.tipoDeOperacao == 'abort'):
+                arquivoSaida.write('rollback' + operacao.transacaoResponsavel.nomeDaTransacao.replace('T','')+'('+operacao.objetoDaOperacao+')')
+            else:
+                arquivoSaida.write(operacao.tipoDeOperacao + operacao.transacaoResponsavel.nomeDaTransacao.replace('T','')+'('+operacao.objetoDaOperacao+')')        
+        arquivoSaida.write('\nDeadlock: Nao\n')
+        arquivoSaida.write('Transacoes Abortadas:\n')
+        arquivoSaida.write('Transacoes Efetivadas: ')
+        for t in range(0,len(listaTransacoes)):
+            arquivoSaida.write(listaTransacoes[t].nomeDaTransacao)
+            if(t != (len(listaTransacoes)-1) ):
+                arquivoSaida.write(',')
+        
+                pass
         
         arquivoSaida.close()

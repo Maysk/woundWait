@@ -11,5 +11,7 @@ ioHandler = GerenciadorDeArquivos()
 
 e1 = Escalonador(listaDeTransacoes,historiaEntrada)
 e1.escalona()
+ioHandler.escreverSaida(e1.listaDeTransacoes,e1.historiaEntrada,e1.historiaSaida)
 e1.showTable()
-ioHandler.escreverSaida(e1.historiaSaida)
+
+
