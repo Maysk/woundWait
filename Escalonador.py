@@ -205,7 +205,7 @@ class Escalonador(object):
 
             linha = linha + 1
     
-        grafo = Desenho(self.listaDeTransacoes, waitForGraph =[])
+        grafo = Desenho(self.listaDeTransacoes)
         grafo.show()
         table.show()
         return app.exec_()

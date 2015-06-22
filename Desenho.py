@@ -122,7 +122,7 @@ class Aresta(object):
 
 class Desenho(QWidget):
 
-    def __init__(self, listaTransacoes, waitForGraph,parent=None):
+    def __init__(self, listaTransacoes,parent=None):
         QWidget.__init__(self, parent)
         # setGeometry(x_pos, y_pos, width, height)    
         altura = 100 + len(listaTransacoes)/2*200
@@ -132,7 +132,6 @@ class Desenho(QWidget):
         self.setGeometry(200, 200, largura, altura)
         self.setWindowTitle('Wait-Fot Graph')
         self.listaTransacoes = listaTransacoes
-        self.waitFotGraph = waitForGraph
     
     def paintEvent(self, event):
         paint = QPainter()
@@ -174,7 +173,20 @@ class Desenho(QWidget):
                     
             tipoLinha = tipoLinha + 1
             
-                    
+        #Criacao das arestas:        
+        Vertice1 = None
+        Vertice2 = None
+        
+        for t in self.listaTransacoes:
+            if(len(t.waitFor) != 0):
+                for vertice in listaVertices:
+                    if(t.nomeDaTransacao == vertice.texto):
+                        Vertice1 = vertice
+                for transacao in t.waitFor:
+                    for vertice2 in listaVertices:
+                        if(transacao.nomeDaTransacao == vertice2.texto):
+                            Vertice2 = vertice2
+                            listaArestas.append(Aresta(Vertice1, Vertice2))   
     
         #cor:
         paint.setBrush(QColor(99,184,255))
@@ -186,3 +198,6 @@ class Desenho(QWidget):
             aresta.drawAresta(paint)
 
         paint.end()
+        
+        
+        
