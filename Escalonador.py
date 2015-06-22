@@ -181,21 +181,26 @@ class Escalonador(object):
         #Loop do preenchimento da tabela:
         linha = 0
         for operacao in self.historiaSaida:
-
-            itemInserido = QTableWidgetItem(operacao.tipoDeOperacao + '(' + operacao.objetoDaOperacao + ')')
-
+            nomeOperacao = operacao.tipoDeOperacao
+            if(operacao.tipoDeOperacao == 'w'):
+                nomeOperacao ='write'                
+                
+            if(operacao.tipoDeOperacao == 'r'):                
+                nomeOperacao = 'read'
+            if(operacao.tipoDeOperacao == 'c'):                
+                nomeOperacao = 'commit'
+                
+            itemInserido = QTableWidgetItem(nomeOperacao + '(' + operacao.objetoDaOperacao + ')')    
+                
             #Parte das cores das operacoes:
-            if(operacao.tipoDeOperacao == 'commit'):
+            if(nomeOperacao == 'commit'):
                 itemInserido.setTextColor(QColor(0,128,0))
-            if(operacao.tipoDeOperacao == 'abort'):
+            if(nomeOperacao == 'abort'):
                 itemInserido.setTextColor(QColor(220,20,60))
 
-            #Identificar a transacao de cada operacao:
-            indiceTransacao = 0
-            for indiceIterativo in range(0,len(self.listaDeTransacoes)):
-                if(operacao in self.listaDeTransacoes[indiceIterativo].listaDeOperacoes):
-                    indiceTransacao = indiceIterativo
-
+            indiceTransacao = self.listaDeTransacoes.index(operacao.transacaoResponsavel)
+            
+            
             table.setItem(linha,indiceTransacao,itemInserido)
 
             linha = linha + 1
