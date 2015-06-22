@@ -18,6 +18,7 @@ class GerenciadorDeBloqueio:
                 comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.transacaoXLock)
                 if(comparacaoDasTransacoes == -1): # wound
                     self.transacoesCanceladas.append(objeto.transacaoXLock)
+                    self.transacoesComExclusiveLock[objeto.transacaoXLock].remove(operacao.objetoDaOperacao)
                     objeto.transacaoXLock = None
                     objeto.listaDeBloqueioCompartilhado.append(operacao.transacaoResponsavel)
                     self.addInTransacoesComSharedLock(operacao)
@@ -53,8 +54,10 @@ class GerenciadorDeBloqueio:
                 comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.transacaoXLock)
                 if(comparacaoDasTransacoes == -1):  # wound
                     self.transacoesCanceladas.append(objeto.transacaoXLock)
+                    self.transacoesComExclusiveLock[objeto.transacaoXLock].remove(operacao.objetoDaOperacao)
                     objeto.transacaoXLock = operacao.transacaoResponsavel
                     self.addInTransacoesComExclusiveLock(operacao)
+
 
                 elif(comparacaoDasTransacoes == 1): # wait
                     objeto.listaDeEspera.append(operacao.transacaoResponsavel)
@@ -75,6 +78,7 @@ class GerenciadorDeBloqueio:
                     comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
                     if(comparacaoDasTransacoes == -1):
                         self.transacoesCanceladas.append(objeto.listaDeBloqueioCompartilhado[i])
+                        self.transacoesComSharedLock[operacao.transacaoResponsavel].remove(operacao.objetoDaOperacao)
                         indexM = i
                     if(comparacaoDasTransacoes == 0):
                         indexM = i

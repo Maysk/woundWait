@@ -154,15 +154,19 @@ class Escalonador(object):
 
                     elif(proximaOperacaoDaTransacaoMaisVelha.tipoDeOperacao == 'r'):
                         tamanhoDaLista = len(objeto.listaDeEspera)
-                        indice = 0
-                        while(proximaOperacaoDaTransacaoMaisVelha != 'w' and indice < tamanhoDaLista):
-                            t = objeto.listaDeEspera[0]
-                            t.isWaiting = False
-                            indice = indice + 1
-                            del objeto.listaDeEspera[0]
-                            del self.lockMan.transacoesEmWait[t]
-                            while(t.indiceProximaOperacao < t.indiceDaUltimaOperacaoNaHistoria and not t.isWaiting):
-                                self.realizarOperacao(t.listaDeOperacoes[t.indiceProximaOperacao])
+                        waitLocal = []
+                        for i in range(tamanhoDaLista):
+                            waitLocal.append(objeto.listaDeEspera[i])
+
+                        while(proximaOperacaoDaTransacaoMaisVelha != 'w' and waitLocal != []):
+                            t = waitLocal[0]
+                            del waitLocal[0]
+                            if(t.isWaiting):
+                                t.isWaiting = False
+                                del objeto.listaDeEspera[0]
+                                del self.lockMan.transacoesEmWait[t]
+                                while(t.indiceProximaOperacao < t.indiceDaUltimaOperacaoNaHistoria and not t.isWaiting):
+                                    self.realizarOperacao(t.listaDeOperacoes[t.indiceProximaOperacao])
 
     def liberarWaits(self,transacao):
         if(transacao in self.lockMan.transacoesEmWait):

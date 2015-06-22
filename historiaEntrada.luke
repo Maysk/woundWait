@@ -1,8 +1,9 @@
-T1:w(X);r(Y);c()
-T3:r(X);r(Y);r(W);w(Z);c()
-T2:w(Y);r(Z);w(W);c()
+T1:w(X);r(Y);r(W);w(Z);r(X);w(X);c()
+T2:w(Y);r(Z);r(W);w(Z);c()
+T3:w(Z);r(Z);w(Z);r(Z);r(X);c()
+T4:w(X);r(Y);r(W);w(Z);r(X);w(X);c()
 
-HistoriaAutomatica=False
+HistoriaAutomatica=True
 
 w1(X);r1(Y);r3(X);c1();r3(Y);r3(W);w3(Z);c3();w2(Y);r2(Z);w2(W);c2()
 

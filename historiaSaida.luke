@@ -1,5 +1,5 @@
-Historia de Entrada: w2(Y)w3(Y)w1(Y)r2(Z)r3(Z)r1(Z)w2(W)w3(W)w1(W)w2(Y)w3(Y)w1(Y)r2(Z)r3(Z)r1(Z)w2(W)w3(W)w1(W)w2(Y)c3()w1(Y)r2(Z)r1(Z)w2(W)w1(W)c2()c1()
-Historia de Saida: w2(Y)r2(Z)w2(W)w2(Y)r2(Z)w2(W)w2(Y)r2(Z)w2(W)c2()w3(Y)r3(Z)w3(W)w3(Y)r3(Z)w3(W)c3()w1(Y)r1(Z)w1(W)w1(Y)r1(Z)w1(W)w1(Y)r1(Z)w1(W)c1()
+Historia de Entrada: w1(X)w2(Y)w3(Z)w4(X)r1(Y)r2(Z)r3(Z)r4(Y)r1(W)r2(W)w3(Z)r4(W)w1(Z)w2(Z)r3(Z)w4(Z)r1(X)c2()r3(X)r4(X)w1(X)c3()w4(X)c1()c4()
+Historia de Saida: w1(X)w2(Y)w3(Z)rollback2()r1(Y)r3(Z)r1(W)w3(Z)rollback3()w1(Z)r1(X)w1(X)c1()w2(Y)w4(X)r2(Z)r2(W)w2(Z)c2()r4(Y)r4(W)w3(Z)r3(Z)w3(Z)r3(Z)rollback4()r3(X)c3()w4(X)r4(Y)r4(W)w4(Z)r4(X)w4(X)c4()
 Deadlock: Nao
 Transacoes Abortadas:
-Transacoes Efetivadas: T2,T3,T1
+Transacoes Efetivadas: T1,T2,T3,T4
