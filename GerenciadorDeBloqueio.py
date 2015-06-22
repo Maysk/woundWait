@@ -68,39 +68,43 @@ class GerenciadorDeBloqueio:
             else:
                 objeto.listaDeBloqueioCompartilhado.sort(reverse = True)
                 tamanhoDaListaDeBloqueioCompartilhado = len(objeto.listaDeBloqueioCompartilhado)
-                i = 0
-                comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
-                while(i<tamanhoDaListaDeBloqueioCompartilhado and comparacaoDasTransacoes==-1):
+
+                indexM = -1
+
+                for i in range(tamanhoDaListaDeBloqueioCompartilhado):
                     comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[i])
                     if(comparacaoDasTransacoes == -1):
                         self.transacoesCanceladas.append(objeto.listaDeBloqueioCompartilhado[i])
-
-                    i=i+1
-
-                tamanhoDaListaDeBloqueioCompartilhado = len(objeto.listaDeBloqueioCompartilhado)
+                        indexM = i
+                    if(comparacaoDasTransacoes == 0):
+                        indexM = i
+                
                 if(tamanhoDaListaDeBloqueioCompartilhado == 0):
                     objeto.transacaoXLock = operacao.transacaoResponsavel
                     self.addInTransacoesComExclusiveLock(operacao)
 
-                elif(tamanhoDaListaDeBloqueioCompartilhado == 1):
-                    comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[0])
-                    if(comparacaoDasTransacoes == 0):
-                        del objeto.listaDeBloqueioCompartilhado[0]
-                        objeto.transacaoXLock = operacao.transacaoResponsavel
-                        self.transacoesComSharedLock[operacao.transacaoResponsavel].remove(operacao.objetoDaOperacao)
-                        self.addInTransacoesComExclusiveLock(operacao)
-
-                    else:   # wait
+                else:
+                    if(indexM == -1):
                         objeto.listaDeEspera.append(operacao.transacaoResponsavel)
                         operacao.transacaoResponsavel.isWaiting = True
                         self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
                         operacao.transacaoResponsavel.inserirNoWaitFor(objeto.listaDeBloqueioCompartilhado[0])
-                else:   #wait
-                    objeto.listaDeEspera.append(operacao.transacaoResponsavel)
-                    operacao.transacaoResponsavel.isWaiting = True
-                    self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
-                    operacao.transacaoResponsavel.inserirNoWaitFor(objeto.listaDeBloqueioCompartilhado[0])
-
+                    else:
+                        comparacaoDasTransacoes = cmp(operacao.transacaoResponsavel, objeto.listaDeBloqueioCompartilhado[indexM])
+                        if(comparacaoDasTransacoes == 0 and indexM == tamanhoDaListaDeBloqueioCompartilhado - 1):
+                            del objeto.listaDeBloqueioCompartilhado[indexM]
+                            objeto.transacaoXLock = operacao.transacaoResponsavel
+                            self.transacoesComSharedLock[operacao.transacaoResponsavel].remove(operacao.objetoDaOperacao)
+                            self.addInTransacoesComExclusiveLock(operacao)
+                        elif(comparacaoDasTransacoes == -1 and indexM == tamanhoDaListaDeBloqueioCompartilhado - 1):
+                            objeto.transacaoXLock = operacao.transacaoResponsavel
+                            self.addInTransacoesComExclusiveLock(operacao)
+                        else:
+                            objeto.listaDeEspera.append(operacao.transacaoResponsavel)
+                            operacao.transacaoResponsavel.isWaiting = True
+                            self.transacoesEmWait[operacao.transacaoResponsavel] = operacao.objetoDaOperacao
+                            operacao.transacaoResponsavel.inserirNoWaitFor(objeto.listaDeBloqueioCompartilhado[indexM+1])
+                            
         except KeyError:
             objeto = Objeto()
             objeto.transacaoXLock = operacao.transacaoResponsavel

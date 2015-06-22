@@ -5,3 +5,4 @@ T2:w(Y);r(Z);w(W);c()
 HistoriaAutomatica=False
 
 w1(X);r1(Y);r3(X);c1();r3(Y);r3(W);w3(Z);c3();w2(Y);r2(Z);w2(W);c2()
+

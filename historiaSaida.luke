@@ -1,14 +1,5 @@
-Historia de Saida:
-
-w1(X)
-r1(Y)
-c1()
-r3(X)
-r3(Y)
-r3(W)
-w3(Z)
-c3()
-w2(Y)
-r2(Z)
-w2(W)
-c2()
+Historia de Entrada: w2(Y)w3(Y)w1(Y)r2(Z)r3(Z)r1(Z)w2(W)w3(W)w1(W)w2(Y)w3(Y)w1(Y)r2(Z)r3(Z)r1(Z)w2(W)w3(W)w1(W)w2(Y)c3()w1(Y)r2(Z)r1(Z)w2(W)w1(W)c2()c1()
+Historia de Saida: w2(Y)r2(Z)w2(W)w2(Y)r2(Z)w2(W)w2(Y)r2(Z)w2(W)c2()w3(Y)r3(Z)w3(W)w3(Y)r3(Z)w3(W)c3()w1(Y)r1(Z)w1(W)w1(Y)r1(Z)w1(W)w1(Y)r1(Z)w1(W)c1()
+Deadlock: Nao
+Transacoes Abortadas:
+Transacoes Efetivadas: T2,T3,T1
