@@ -128,7 +128,7 @@ class Desenho(QWidget):
         altura = 100 + len(listaTransacoes)/2*200
         if(len(listaTransacoes)%2 != 0):
             altura = altura + 200
-        largura = 750    
+        largura = 600
         self.setGeometry(200, 200, largura, altura)
         self.setWindowTitle('Wait-Fot Graph')
         self.listaTransacoes = listaTransacoes
