@@ -80,37 +80,37 @@ class Aresta(object):
             y2 = y2 - raio/2.15
             p2.setX(x2)
             p2.setY(y2)
-            p1.setX(x2-12)
-            p1.setY(y2-12)
-            p3.setX(x2+12)
-            p3.setY(y2-12)
+            p1.setX(x2-9)
+            p1.setY(y2-9)
+            p3.setX(x2+9)
+            p3.setY(y2-9)
         elif(x1==x2 and y1>y2):
             y1 = y1 - raio/2.15
             y2 = y2 + raio/2.15
             p2.setX(x2)
             p2.setY(y2)
-            p1.setX(x2+12)
-            p1.setY(y2+12)
-            p3.setX(x2-12)
-            p3.setY(y2+12)
+            p1.setX(x2+9)
+            p1.setY(y2+9)
+            p3.setX(x2-9)
+            p3.setY(y2+9)
         elif(x1>x2 and y1==y2):
             x1 = x1 - raio/2.15
             x2 = x2 + raio/2.15
             p2.setX(x2)
             p2.setY(y2)
-            p1.setX(x2+12)
-            p1.setY(y2+12)
-            p3.setX(x2+12)
-            p3.setY(y2-12)
+            p1.setX(x2+9)
+            p1.setY(y2+9)
+            p3.setX(x2+9)
+            p3.setY(y2-9)
         elif(x1<x2 and y1==y2):
             x1 = x1 + raio/2.15
             x2 = x2 - raio/2.15
             p2.setX(x2)
             p2.setY(y2)
-            p1.setX(x2-12)
-            p1.setY(y2-12)
-            p3.setX(x2-12)
-            p3.setY(y2+12)
+            p1.setX(x2-9)
+            p1.setY(y2-9)
+            p3.setX(x2-9)
+            p3.setY(y2+9)
         
         #Desenhar aresta:
         painter.drawLine(x1,y1,x2,y2)

@@ -189,13 +189,15 @@ class Escalonador(object):
                 nomeOperacao = 'read'
             if(operacao.tipoDeOperacao == 'c'):                
                 nomeOperacao = 'commit'
+            if(operacao.tipoDeOperacao == 'abort'):
+                nomeOperacao = 'rollback'
                 
             itemInserido = QTableWidgetItem(nomeOperacao + '(' + operacao.objetoDaOperacao + ')')    
                 
             #Parte das cores das operacoes:
             if(nomeOperacao == 'commit'):
                 itemInserido.setTextColor(QColor(0,128,0))
-            if(nomeOperacao == 'abort'):
+            if(nomeOperacao == 'rollback'):
                 itemInserido.setTextColor(QColor(220,20,60))
 
             indiceTransacao = self.listaDeTransacoes.index(operacao.transacaoResponsavel)
